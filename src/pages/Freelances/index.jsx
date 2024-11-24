@@ -1,129 +1,59 @@
-/* eslint-disable no-console */
-import styled from 'styled-components'
-// import DefaultPicture from '../../assets/profile.png'
+import { useFetch, useTheme } from '../../utils/hooks'
 import Card from '../../components/Card'
-import { useEffect, useState } from 'react'
 import { Loader } from '../../utils/style/Atoms'
 import colors from '../../utils/style/colors'
 
-// const freelanceProfiles = [
-//     {
-//         name: 'Jane Doe',
-//         jobTitle: 'Devops',
-//         picture: DefaultPicture,
-//     },
-//     {
-//         name: 'John Doe',
-//         jobTitle: 'Developpeur frontend',
-//         picture: DefaultPicture,
-//     },
-//     {
-//         name: 'Jeanne Biche',
-//         jobTitle: 'Développeuse Fullstack',
-//         picture: DefaultPicture,
-//     },
-// ]
-
-const CardsContainer = styled.div`
-    position: absolute;
-    left: 342px;
-    top: 447px;
-    display: grid;
-    gap: 65px;
-    grid-template-rows: 350px 350px;
-    grid-template-columns: repeat(2, 1fr);
-`
-const DivContainer = styled.h1`
-    position: absolute;
-    text-align: center;
-    line-height: 132.5%;
-    ${(props) =>
-        props.$h1 && 
-        `font-size: 30px;
-        color: black;
-        width: 448px;
-        height: 45px;
-        left: 500px;
-        top: 226px;`};
-    ${(props) =>
-        props.$h3 && 
-        `font-size: 20px;
-        color: ${colors.secondary};
-        width: 1002px;
-        height: 27px;
-        left: 202px;
-        top: 323px;`};        
-`
-const LoaderWrapper = styled.div`
-  display: flex;
-  justify-content: center;
-  position: absolute;
-  top: 400px;
-  left: 655px
-`
-
+// Utilisation de Bootstrap pour la mise en page
 function Freelances() {
-  const [isDataLoading, setDataLoading] = useState(false)
-  const [error, setError] = useState(false)
-  const [freelancersList, setFreelancesList] = useState([])
+  const { theme } = useTheme()
+  const { data, isLoading, error } = useFetch('https://api-vision-vercel.vercel.app/freelances')
+  const { freelancersList } = data
 
-//   useEffect(() => {
-//     async function fetchFreelances() {
-//       setDataLoading(true)
-//       try {
-//         const response = await fetch(`http://localhost:8000/freelances`)
-//         const { freelancersList } = await response.json()
-//         setFreelancesList(freelancersList)
-//       } catch (err) {
-//         console.log('===== error =====', err)
-//         setError(true)
-//       } finally {
-//         setDataLoading(false)
-//       }
-//     }
-//     fetchFreelances()
-//   }, [])
-  useEffect(() => {
-    setDataLoading(true)
-    fetch(`http://localhost:8000/freelances`)
-    .then((response) => response.json()
-        .then(({ freelancersList }) => {
-            setFreelancesList(freelancersList)
-            setDataLoading(false)
-        })
-        .catch((error) => {
-            console.log(error)
-            setError(true)
-        })
-    )
-  },[])
-
-  if (error) {
-    return <span>Oups il y a eu un problème</span>
+  const textStyle = {
+    color: theme === 'light' ? `${colors.primary}` : `${colors.backgroundLight}`,
   }
 
+  if (error) {
+    return <div className="text-center mt-5">Oups, il y a eu un problème.</div>
+  }
+
+  // Style dynamique selon le thème
+
   return (
-    <div>
-    <DivContainer $h1>Trouvez votre prestataire</DivContainer>
-    <DivContainer $h3>Chez Shiny nous réunissons les meilleurs profils pour vous.</DivContainer>
-      {isDataLoading ? (
-        <LoaderWrapper>
+    <div
+      className={`container p-5 ${
+        theme === 'light' ? `${colors.backgroundLight}` : `${colors.backgroundDark}`
+      }`}
+    >
+      <div className="text-center mb-4">
+        <h1 style={textStyle} className="fw-bold">
+          Trouvez votre prestataire
+        </h1>
+        <h3 style={{ color: '#8186a0' }}>
+          Chez Shiny, nous réunissons les meilleurs profils pour vous.
+        </h3>
+      </div>
+
+      {isLoading ? (
+        <div className="d-flex justify-content-center my-5">
           <Loader />
-        </LoaderWrapper>
+        </div>
       ) : (
-        <CardsContainer>
-          {freelancersList.map((profile, index) => (
-            <Card
-              key={`${profile.name}-${index}`}
-              label={profile.job}
-              title={profile.name}
-              picture={profile.picture}
-            />
-          ))}
-        </CardsContainer>
+        <div className="row g-4 justify-content-center">
+          {freelancersList &&
+            freelancersList.map((profile, index) => (
+              <div className="col-12 col-md-6 col-lg-4" key={`${profile.name}-${index}`}>
+                <Card
+                  label={profile.job}
+                  title={profile.name}
+                  picture={profile.picture}
+                />
+              </div>
+            ))}
+        </div>
       )}
     </div>
   )
 }
-export default Freelances
 
+export default Freelances

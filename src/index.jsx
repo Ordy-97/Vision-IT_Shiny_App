@@ -9,7 +9,10 @@ import Error from './components/Error';
 import Footer from './components/Footer';
 import {ThemeProvider, SurveyProvider}  from './utils/context';
 import GlobalStyle from './utils/style/GlobalStyle';
-import { BrowserRouter as Router, Route, Switch } from 'react-router-dom'
+import { BrowserRouter as Router, Route, Switch } from 'react-router-dom';
+import 'bootstrap/dist/css/bootstrap.min.css';
+import 'bootstrap/dist/js/bootstrap.bundle.min.js'
+
 
 import reportWebVitals from './reportWebVitals';
 // import { createGlobalStyle } from 'styled-components'

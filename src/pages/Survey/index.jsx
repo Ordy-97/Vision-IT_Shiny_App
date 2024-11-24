@@ -1,81 +1,31 @@
-/* eslint-disable no-console */
-import { useParams } from 'react-router-dom'
-import { Link } from 'react-router-dom'
-import styled from 'styled-components'
+import { useParams, Link } from 'react-router-dom'
 import { useContext } from 'react'
-import colors from '../../utils/style/colors'
-// import { useEffect, useState } from 'react'
 import { Loader } from '../../utils/style/Atoms'
 import { SurveyContext } from '../../utils/context'
 import { useFetch } from '../../utils/hooks'
-
-const SurveyContainer = styled.div`
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-`
-
-const QuestionTitle = styled.h2`
-  text-decoration: underline;
-  text-decoration-color: ${colors.primary};
-`
-
-const QuestionContent = styled.span`
-  margin: 30px;
-`
-
-const LinkWrapper = styled.div`
-  padding-top: 30px;
-  & a {
-    color: black;
-  }
-  & a:first-of-type {
-    margin-right: 20px;
-  }
-`
-const ReplyBox = styled.button`
-  border: none;
-  height: 100px;
-  width: 300px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background-color: ${colors.backgroundLight};
-  border-radius: 30px;
-  cursor: pointer;
-  box-shadow: ${(props) =>
-    props.isSelected ? `0px 0px 0px 2px ${colors.primary} inset` : 'none'};
-  &:first-child {
-    margin-right: 15px;
-  }
-  &:last-of-type {
-    margin-left: 15px;
-  }
-`
-
-const ReplyWrapper = styled.div`
-  display: flex;
-  flex-direction: row;
-`
-
+import { useTheme } from '../../utils/hooks'
+import colors from '../../utils/style/colors'
 
 function Survey() {
   const { questionNumber } = useParams()
   const questionNumberInt = parseInt(questionNumber)
   const prevQuestionNumber = questionNumberInt === 1 ? 1 : questionNumberInt - 1
   const nextQuestionNumber = questionNumberInt + 1
+  const { theme } = useTheme()
 
-  const { data, isLoading, error } = useFetch(`http://localhost:8000/survey`)
+  const { data, isLoading, error } = useFetch(`https://api-vision-vercel.vercel.app/survey`)
   const { surveyData } = data
+
+  const textStyle = {
+    color: theme === 'light' ? `${colors.primary}` : `${colors.backgroundLight}`,
+  }
 
   // const [surveyData, setSurveyData] = useState({})
   // const [isDataLoading, setDataLoading] = useState(false)
 
-  // recuperation de notre contexte
-  const { answers, saveAnswers } = useContext(SurveyContext) 
+  const { answers, saveAnswers } = useContext(SurveyContext)
 
-  //fonction qui permet d'ajouter un objet "answer" dans notre surveyContext
-  function saveReply(answer) { 
+  function saveReply(answer) {
     saveAnswers({ [questionNumber]: answer })
   }
 
@@ -92,49 +42,68 @@ function Survey() {
   // }, [])
 
   if (error) {
-
-    return <span>Il y a un problème</span>
-    
+    return <div className="text-center mt-5">Il y a un problème !!!</div>
   }
 
   return (
-    <SurveyContainer>
-      <QuestionTitle>Question {questionNumber}</QuestionTitle>
-      {/* recupération et affichage du contenu du tableau SurveyData*/}
+    <div
+      className={`container-fluid py-5 d-flex flex-column align-items-center ${
+        theme === 'light' ? `${colors.backgroundLight}` : `${colors.backgroundDark}`
+      }`}
+    >
+      <h2
+        className={`text-center text-decoration-underline ${
+          theme === 'dark' ? 'text-secondary' : 'text-primary'
+        }`}
+      >
+        Question {questionNumber}
+      </h2>
+
       {isLoading ? (
-        <Loader />
-      ) : ( 
-        //on vérifie d'abord si surveyData existe avant d'afficher son contenu
-        <QuestionContent>
-          {surveyData && surveyData[questionNumber]} 
-        </QuestionContent>
+        <div className="d-flex justify-content-center my-5">
+          <Loader />
+        </div>
+      ) : (
+        <p className="text-center mt-4" style={textStyle}>
+          {surveyData && surveyData[questionNumber]}
+        </p>
       )}
 
-      <ReplyWrapper>
-        <ReplyBox //bouton
+      <div className="d-flex justify-content-center mt-4 gap-3">
+        <button
+          className={`btn btn-lg ${
+            answers[questionNumber] === true ? 'btn-primary' : 'btn-outline-primary'
+          }`}
           onClick={() => saveReply(true)}
-          isSelected={answers[questionNumber] === true} //isSelected va prendre la valeur de true ou false
         >
           Oui
-        </ReplyBox>
-        <ReplyBox
+        </button>
+        <button
+          className={`btn btn-lg ${
+            answers[questionNumber] === false ? 'btn-primary' : 'btn-outline-primary'
+          }`}
           onClick={() => saveReply(false)}
-          isSelected={answers[questionNumber] === false}
         >
           Non
-        </ReplyBox>
-      </ReplyWrapper>
+        </button>
+      </div>
 
-      <LinkWrapper>
-        <Link to={`/survey/${prevQuestionNumber}`}>Précédent</Link>
-        {/** on verifie si surveyData existe et si surveyData[questionNumberInt + 1] existe aussi*/}
+      <div className="d-flex justify-content-between mt-5 w-50 gap-4">
+        <Link className="btn btn-outline-secondary" to={`/survey/${prevQuestionNumber}`}>
+          Précédent
+        </Link>
         {surveyData && surveyData[questionNumberInt + 1] ? (
-            <Link to={`/survey/${nextQuestionNumber}`}>Suivant</Link>
+          <Link className="btn btn-outline-secondary" to={`/survey/${nextQuestionNumber}`}>
+            Suivant
+          </Link>
         ) : (
-            <Link to="/results">Résultats</Link>
+          <Link className="btn btn-primary" to="/results">
+            Résultats
+          </Link>
         )}
-      </LinkWrapper>
-   </SurveyContainer>
+      </div>
+    </div>
   )
 }
+
 export default Survey
